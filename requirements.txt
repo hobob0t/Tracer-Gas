@@ -1,0 +1,7 @@
+pyserial~=3.5
+pandas~=2.2.3
+python-dateutil~=2.8.2
+dash~=2.18.1
+SQLAlchemy~=2.0.36
+plotly~=5.18.0
+dash-bootstrap-components~=1.6.0
