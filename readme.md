@@ -10,6 +10,7 @@ The project dependencies are listed in the `requirements.txt` file.
 To install them, run:
 ```bash
 pip install -r requirements.txt
+```
 
 ## Usage
 Run the `main.py` script to start the program.
