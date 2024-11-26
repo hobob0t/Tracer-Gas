@@ -1,3 +1,4 @@
 db.sqlite
 db.sqlite-journal
 runtime.log
+runtime*.log
