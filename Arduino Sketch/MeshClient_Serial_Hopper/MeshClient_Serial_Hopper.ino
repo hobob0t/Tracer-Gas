@@ -1,13 +1,3 @@
-// rf69 demo tx rx.pde
-// -*- mode: C++ -*-
-// Example sketch showing how to create a simple addressed, reliable messaging client
-// with the RH_RF69 class. RH_RF69 class does not provide for addressing or
-// reliability, so you should only use RH_RF69  if you do not need the higher
-// level messaging abilities.
-// It is designed to work with the other example rf69_server.
-// Demonstrates the use of AES encryption, setting the frequency and modem
-// configuration
-
 #include <RH_RF69.h>
 #include <RHMesh.h>
 #include <RTCZero.h>
@@ -31,7 +21,6 @@
 
 #define VBATPIN A7
 
-
 // Singleton instance of the radio driver
 RH_RF69 driver(RFM69_CS, RFM69_INT);
 
@@ -40,65 +29,54 @@ RHMesh manager(driver, CLIENT_ADDRESS);
  
 void setup() 
 {
+  pinMode(LED,OUTPUT);
+  Serial1.begin(19200);
   Serial.begin(19200);
   if (!manager.init())
     Serial.println("init failed");
   driver.setTxPower(20, true);
-  
+  driver.setModemConfig(driver.GFSK_Rb2Fd5);
 }
  
 uint8_t data[54]; //the max length to send is 54!! DON'T BELEIVE THE DOCUMENTATION. IT'S 54
-// Dont put this on the stack:
-uint8_t buf[RH_MESH_MAX_MESSAGE_LEN];
-int i=0;
+uint8_t buf[54]; //receive buffer
+int i=0; 
 char serial_buf;
- 
+uint8_t len = sizeof(buf);
+uint8_t from;
+
 void loop()
 {
-
-  if (Serial.available()) 
+  if (manager.recvfromAck(buf, &len, &from))
+  {
+    Serial.print("got reply from : 0x");
+    Serial.print(from, HEX);
+    Serial.print(": ");
+    Serial.print((char* )buf);
+    Serial1.print((char* )buf);
+    memset(buf,0,len);
+  }
+  if (Serial1.available()) 
   {
     if (i<=53) 
     {
-      serial_buf = Serial.read();
+      digitalWrite(LED,HIGH);
+      serial_buf = Serial1.read();
       Serial.print(serial_buf);
       memcpy(&data[i],&serial_buf,sizeof(serial_buf));
       i++;
     }
   }
-  if ((serial_buf == '\n') || (i>=53) || (serial_buf == '\r'))  
-    {
-      delay(50);// Don't send too fast
-      Serial.println("Sending to manager_mesh_server");
-      int result = manager.sendtoWait(data, i+1, SERVER1_ADDRESS);
-      
-      if (result == RH_ROUTER_ERROR_NONE) 
-      {
-        // It has been reliably delivered to the next node.
-        // Now wait for a reply from the ultimate server
-        uint8_t len = sizeof(buf);
-        uint8_t from;    
-        if (manager.recvfromAckTimeout(buf, &len, 3000, &from))
-        {
-          Serial.print("got reply from : 0x");
-          Serial.print(from, HEX);
-          Serial.print(": ");
-          Serial.println((char*)buf);
-        }
-        else
-          {
-            Serial.println("No reply, is rf22_mesh_server1, rf22_mesh_server2 and rf22_mesh_server3 running?");
-          }
-      }
-      else 
-      {
-        Serial.println("sendtoWait failed. Are the intermediate mesh servers running?");
-      }
-      i=0;
-      memset(data, 0, sizeof(data));
-      memset(&serial_buf,0,sizeof(serial_buf));
-      
-    }
+  if ((serial_buf == '\n') || (i>=53))  
+  {
+//    delay(100);// Don't send too fast
+    digitalWrite(LED,LOW);
+    int result = manager.sendtoWait(data, i+1, SERVER1_ADDRESS);
+    i=0;
+    memset(data, 0, sizeof(data));
+    memset(&serial_buf,0,sizeof(serial_buf));
+    
+  }
 }
   // // Send a message to a mesh_server
   // // A route to the destination will be automatically discovered.
@@ -108,13 +86,7 @@ void loop()
   //   // Now wait for a reply from the ultimate server
   //   uint8_t len = sizeof(buf);
   //   uint8_t from;    
-  //   if (manager.recvfromAckTimeout(buf, &len, 3000, &from))
-  //   {
-  //     Serial.print("got reply from : 0x");
-  //     Serial.print(from, HEX);
-  //     Serial.print(": ");
-  //     Serial.println((char*)buf);
-  //   }
+
   //   else
   //   {
   //     Serial.println("No reply, is rf22_mesh_server1, rf22_mesh_server2 and rf22_mesh_server3 running?");

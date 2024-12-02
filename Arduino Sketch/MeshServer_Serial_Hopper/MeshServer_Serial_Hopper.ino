@@ -33,11 +33,14 @@ void setup()
   if (!manager.init())
     Serial.println("RF22 init failed");
   driver.setTxPower(20, true);
+  driver.setModemConfig(driver.GFSK_Rb2Fd5);
 }
  
-uint8_t data[] = "And hello back to you from server1";
-// Dont put this on the stack:
+uint8_t data[54]; //the max length to send is 54!! DON'T BELEIVE THE DOCUMENTATION. IT'S 54
 uint8_t buf[RH_MESH_MAX_MESSAGE_LEN];
+int i=0; 
+char serial_buf;
+
 void loop()
 {
   uint8_t len = sizeof(buf);
@@ -47,10 +50,31 @@ void loop()
     // Serial.print("got request from : 0x");
     // Serial.print(from, HEX);
     // Serial.print(": ");
+    Serial.print("RSSI:");
+    Serial.print(driver.lastRssi());
+    Serial.print(" ");
     Serial.print((char*)buf);
- 
-    // Send a reply back to the originator client
-    if (manager.sendtoWait(data, sizeof(data), from) != RH_ROUTER_ERROR_NONE)
-      Serial.println("sendtoWait failed");
+  }
+  // Check if serial commands have been sent and broadcast them
+  if (Serial.available()) 
+  {
+    if (i<=53) 
+    {
+      digitalWrite(LED,HIGH);
+      serial_buf = Serial.read();
+      Serial.print(serial_buf);
+      memcpy(&data[i],&serial_buf,sizeof(serial_buf));
+      i++;
+    }
+  }
+  if ((serial_buf == '\r') || (i>=53))  
+  {
+    // delay(100);// Don't send too fast
+    digitalWrite(LED,LOW);
+    int result = manager.sendtoWait(data, i+1, 255);
+    i=0;
+    memset(data, 0, sizeof(data));
+    memset(&serial_buf,0,sizeof(serial_buf));
+    
   }
 }
