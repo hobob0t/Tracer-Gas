@@ -19,7 +19,7 @@ import datetime
 
 #global variables
 log_file_name = 'runtime.log'
-logging_level = logging.WARNING
+logging_level = logging.DEBUG
 
 # create queue
 CO2_Sensor_Queue = queue.Queue()
@@ -66,7 +66,7 @@ def layout():
                 lower_row
             ],label="Main"),
             dbc.Tab([
-                dbc.Row([co2_gas_analyzer_input(), alicat_input()]),
+                dbc.Row([co2_gas_analyzer_input(), alicat_input(),update_ports_list()]),
                 dbc.Row(dbc.Stack([dbc.Label("Active Connections:"),connections])),
                 interval,
                 interval_connections
@@ -294,6 +294,15 @@ def calculate_SCFM(slpm, injection, baseline):
     logger.log(logging.INFO, f"Calculating SCFM with SLPM: {slpm}, Injection: {injection}, Baseline: {baseline}")
     mDotAir = ((slpm * slTOcf * (10 ** 6 - baseline)) / (injection - baseline)) - (slpm * slTOcf)
     return mDotAir
+
+@app.callback(
+    Output("GA-port","options"),
+    Output("alicat-port","options"),
+    Input("btn-update-serial-port-list","n_clicks")
+)
+def update_ports(n):
+    ports_list = [{"label": port, "value": port} for port in get_serial_ports()]
+    return ports_list,ports_list
 
 if __name__ == '__main__':
     app.run(debug=False)

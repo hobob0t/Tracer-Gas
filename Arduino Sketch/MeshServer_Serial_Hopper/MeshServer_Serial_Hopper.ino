@@ -50,9 +50,9 @@ void loop()
     // Serial.print("got request from : 0x");
     // Serial.print(from, HEX);
     // Serial.print(": ");
-    Serial.print("RSSI:");
-    Serial.print(driver.lastRssi());
-    Serial.print(" ");
+    //Serial.print("RSSI:");
+    //Serial.print(driver.lastRssi());
+    //Serial.print(" ");
     Serial.print((char*)buf);
   }
   // Check if serial commands have been sent and broadcast them

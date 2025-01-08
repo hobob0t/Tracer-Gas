@@ -103,7 +103,7 @@ class SBA5(threading.Thread):
                 self.logger.log(logging.INFO, f"SBA5 {self.name} Warming Up")
                 self.logger.log(logging.INFO, response)
                 return {'Name': self.name, 'Zeroing': False, 'Warming Up': True, 'Source': 'SBA5'}
-            elif char == 'M':
+            elif char == 'M' or char == '\0':
                 self.logger.log(logging.INFO, f"SBA5 {self.name} Parsing Measurement")
                 return self.parse_measurement(response)
             elif char == '':

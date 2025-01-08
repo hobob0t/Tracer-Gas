@@ -22,6 +22,7 @@ connections = html.Div(
     children=[]
 )
 
+
 # define graph div
 graph = html.Div(
     id="graph-div",
@@ -46,6 +47,16 @@ interval_connections = dcc.Interval(
     interval=1000,
     n_intervals=0
 )
+
+# update serial ports dropdown button
+def update_ports_list():
+    return dbc.Toast([
+         dbc.Button("Update Serial Port List", id="btn-update-serial-port-list")
+         ],
+        id="update_group",
+        header="Update Ports",
+    )
+
 
 # CO2 connect input
 def co2_gas_analyzer_input():
