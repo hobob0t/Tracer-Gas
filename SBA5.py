@@ -88,6 +88,9 @@ class SBA5(threading.Thread):
                     self.logger.log(logging.WARNING, f"SBA5 {self.name} No Response")
                     return None
                 char = response[0]
+                if char == '\0':
+                    char = response[1]
+
             except Exception as exp:
                 self.logger.log(logging.ERROR, type(exp))
                 self.logger.log(logging.ERROR, exp.args)
@@ -103,7 +106,7 @@ class SBA5(threading.Thread):
                 self.logger.log(logging.INFO, f"SBA5 {self.name} Warming Up")
                 self.logger.log(logging.INFO, response)
                 return {'Name': self.name, 'Zeroing': False, 'Warming Up': True, 'Source': 'SBA5'}
-            elif char == 'M' or char == '\0':
+            elif char == 'M':
                 self.logger.log(logging.INFO, f"SBA5 {self.name} Parsing Measurement")
                 return self.parse_measurement(response)
             elif char == '':
